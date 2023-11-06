@@ -4,7 +4,6 @@
  * and open the template in the editor.
  */
 package server;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.*;
 
@@ -44,6 +43,13 @@ public class ServerThread implements Runnable {
         this.port = port;
         System.out.println("listener: " + port);
     }
+    public void endClient(){
+        this.isClosed = true;
+        Server.serverThreadBus.remove(clientNumber);
+        System.out.println(this.clientNumber+" đã thoát");
+        Server.serverThreadBus.sendOnlineList();
+        Server.serverThreadBus.mutilCastSend("global-message"+","+"---Client "+this.clientNumber+" đã thoát---");
+    }
 
     @Override
     public void run() {
@@ -69,6 +75,11 @@ public class ServerThread implements Runnable {
                     break;
                 }
                 else System.out.println(message);
+                if(message.equals("end")){
+                    System.out.println("endClient");
+                    endClient();
+                    break;
+                }
                 String[] messageSplit = message.split(",");
                 if(messageSplit[0].equals("send-to-global")){
                     Server.serverThreadBus.boardCast(this.getClientNumber(),"global-message"+","+"Client "+messageSplit[2]+": "+messageSplit[1]);
@@ -78,11 +89,7 @@ public class ServerThread implements Runnable {
                 }
             }
         } catch (IOException e) {
-            isClosed = true;
-            Server.serverThreadBus.remove(clientNumber);
-            System.out.println(this.clientNumber+" đã thoát");
-            Server.serverThreadBus.sendOnlineList();
-            Server.serverThreadBus.mutilCastSend("global-message"+","+"---Client "+this.clientNumber+" đã thoát---");
+            endClient();
         }
     }
     public void write(String message) throws IOException{

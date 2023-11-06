@@ -340,7 +340,19 @@ public class Client extends javax.swing.JFrame {
     /**
      * @param args the command line arguments
      */
+    public static void endClient(){
+        byte[] d = "end".getBytes();
+        DatagramPacket end = new DatagramPacket(d,d.length,serverAddress,port);
+        try {
+            socketOfClient.send(end);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } 
+    }
     public static void main(String args[]) {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                endClient();
+        }));
         Client client = new Client();
     }
 
